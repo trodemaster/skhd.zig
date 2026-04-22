@@ -1,9 +1,11 @@
 const std = @import("std");
 
-fn linkFrameworks(exe: *std.Build.Step.Compile) void {
+fn linkFrameworks(b: *std.Build, exe: *std.Build.Step.Compile) void {
     exe.root_module.linkFramework("Cocoa", .{});
     exe.root_module.linkFramework("Carbon", .{});
     exe.root_module.linkFramework("CoreServices", .{});
+    // src/ must be in the include path so c.zig can @cInclude("carbon_shim.h")
+    exe.root_module.addIncludePath(b.path("src"));
 }
 
 fn addVersionImport(b: *std.Build, exe: *std.Build.Step.Compile) void {
@@ -77,7 +79,7 @@ pub fn build(b: *std.Build) void {
         }
     }
 
-    linkFrameworks(exe);
+    linkFrameworks(b, exe);
     addVersionImport(b, exe);
     exe.root_module.addOptions("build_options", options);
 
@@ -135,7 +137,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
-    linkFrameworks(alloc_exe);
+    linkFrameworks(b, alloc_exe);
     addVersionImport(b, alloc_exe);
 
     const alloc_options = b.addOptions();
@@ -156,7 +158,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
-    linkFrameworks(exe_unit_tests);
+    linkFrameworks(b, exe_unit_tests);
     addVersionImport(b, exe_unit_tests);
 
     exe_unit_tests.root_module.addOptions("build_options", options);
@@ -171,7 +173,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
-    linkFrameworks(tests_unit_tests);
+    linkFrameworks(b, tests_unit_tests);
     addVersionImport(b, exe_unit_tests);
     tests_unit_tests.root_module.addOptions("build_options", options);
     const run_tests_unit_tests = b.addRunArtifact(tests_unit_tests);
@@ -196,7 +198,7 @@ pub fn build(b: *std.Build) void {
                 .optimize = optimize,
             }),
         });
-        linkFrameworks(module_tests);
+        linkFrameworks(b, module_tests);
         addVersionImport(b, module_tests);
         module_tests.root_module.addOptions("build_options", options);
         const run_module_tests = b.addRunArtifact(module_tests);

@@ -1,11 +1,26 @@
 pub const c_impl = @cImport({
-    // Skip sub-frameworks that Zig 0.16 can now resolve but cannot translate:
-    // Metadata/MDItem.h has Obj-C blocks syntax; ATS has ATS_UNAVAILABLE attribute issues.
-    @cDefine("__METADATA_METADATA__", "1");
-    @cDefine("__ATS__", "1");
-    @cDefine("__IMAGEIO__", "1");
-    @cDefine("__CORETEXT__", "1");
-    @cDefine("__DISKSPACERECOVERY__", "1");
+    // Zig 0.16 no longer auto-adds sub-framework -F paths, so build.zig adds
+    // them explicitly. That exposes headers Zig's translate-c cannot handle.
+    // Skip problematic sub-frameworks; include a shim for forward declarations
+    // that HIToolbox needs (e.g. CTFontRef) before the skips take effect.
+    @cInclude("carbon_shim.h");
+
+    // CoreText: CTFont.h / CTFrame.h / CTRun.h use _Nonnull on array params.
+    // Shim above provides CTFontRef / CTFontDescriptorRef used by HIToolbox.
+    @cDefine("__CTFONT__", "1");
+    @cDefine("__CTFRAME__", "1");
+    @cDefine("__CTRUN__", "1");
+    @cDefine("__CTRUBYANNOTATION__", "1");
+
+    // These frameworks are unused by skhd.zig; skip their often-broken headers.
+    @cDefine("__METADATA_METADATA__", "1"); // MDItem.h has Obj-C blocks
+    @cDefine("__ATS__", "1");              // ATS_UNAVAILABLE issues
+    @cDefine("__IMAGEIO__", "1");          // CGImageAnimation blocks
+    @cDefine("__DISKSPACERECOVERY__", "1"); // blocks typedef
+    @cDefine("__HELP__", "1");             // CFURLRef issues
+    @cDefine("__SPEECHRECOGNITION__", "1"); // not needed
+    @cDefine("__XPC_H__", "1");            // uuid_t nullability issues
+
     @cInclude("Carbon/Carbon.h");
     @cInclude("objc/objc.h");
     @cInclude("objc/runtime.h");
