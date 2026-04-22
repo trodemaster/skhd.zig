@@ -1,9 +1,9 @@
 const std = @import("std");
 
 fn linkFrameworks(exe: *std.Build.Step.Compile) void {
-    exe.linkFramework("Cocoa");
-    exe.linkFramework("Carbon");
-    exe.linkFramework("CoreServices");
+    exe.root_module.linkFramework("Cocoa", .{});
+    exe.root_module.linkFramework("Carbon", .{});
+    exe.root_module.linkFramework("CoreServices", .{});
 }
 
 fn addVersionImport(b: *std.Build, exe: *std.Build.Step.Compile) void {
@@ -38,7 +38,7 @@ fn addVersionImport(b: *std.Build, exe: *std.Build.Step.Compile) void {
     });
     version_step.has_side_effects = true;
 
-    const version_file = version_step.captureStdOut();
+    const version_file = version_step.captureStdOut(.{});
     exe.root_module.addAnonymousImport("VERSION", .{
         .root_source_file = version_file,
     });
