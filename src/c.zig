@@ -1,25 +1,37 @@
 pub const c_impl = @cImport({
     // Zig 0.16 no longer auto-adds sub-framework -F paths, so build.zig adds
     // them explicitly. That exposes headers Zig's translate-c cannot handle.
-    // Skip problematic sub-frameworks; include a shim for forward declarations
-    // that HIToolbox needs (e.g. CTFontRef) before the skips take effect.
+    // Skip all sub-frameworks unused by a hotkey daemon; use a shim for any
+    // types that needed frameworks require (e.g. CTFontRef used by HIToolbox).
     @cInclude("carbon_shim.h");
 
-    // CoreText: CTFont.h / CTFrame.h / CTRun.h use _Nonnull on array params.
-    // Shim above provides CTFontRef / CTFontDescriptorRef used by HIToolbox.
+    // CoreText specific headers: _Nonnull on array params breaks translate-c.
+    // Shim provides CTFontRef / CTFontDescriptorRef used by HIToolbox headers.
     @cDefine("__CTFONT__", "1");
     @cDefine("__CTFRAME__", "1");
     @cDefine("__CTRUN__", "1");
     @cDefine("__CTRUBYANNOTATION__", "1");
 
-    // These frameworks are unused by skhd.zig; skip their often-broken headers.
+    // ApplicationServices sub-frameworks — unused, skip to avoid translate-c issues
+    @cDefine("__ATS__", "1");               // deprecated font API
+    @cDefine("__IMAGEIO__", "1");           // CGImageAnimation blocks typedef
+    @cDefine("__QD__", "1");               // ancient QuickDraw
+    @cDefine("__PRINTCORE__", "1");        // printing APIs not needed
+    @cDefine("__SPEECHSYNTHESIS__", "1");  // speech not needed
+
+    // CoreServices sub-frameworks — unused
     @cDefine("__METADATA_METADATA__", "1"); // MDItem.h has Obj-C blocks
-    @cDefine("__ATS__", "1");              // ATS_UNAVAILABLE issues
-    @cDefine("__IMAGEIO__", "1");          // CGImageAnimation blocks
     @cDefine("__DISKSPACERECOVERY__", "1"); // blocks typedef
-    @cDefine("__HELP__", "1");             // CFURLRef issues
-    @cDefine("__SPEECHRECOGNITION__", "1"); // not needed
-    @cDefine("__XPC_H__", "1");            // uuid_t nullability issues
+
+    // Carbon sub-frameworks — unused, some crash translate-c
+    @cDefine("__HELP__", "1");             // CFURLRef issues in AppleHelp.h
+    @cDefine("__SPEECHRECOGNITION__", "1");
+    @cDefine("__OPENSCRIPTING__", "1");    // large OSA/AppleScript headers crash translate-c
+    @cDefine("__COMMONPANELS__", "1");     // font/color panel APIs not needed
+    @cDefine("__SECURITYHI__", "1");       // keychain UI not needed
+
+    // XPC: nullability on uuid_t array params
+    @cDefine("__XPC_H__", "1");
 
     @cInclude("Carbon/Carbon.h");
     @cInclude("objc/objc.h");
