@@ -1,6 +1,5 @@
 pub const c_impl = @cImport({
     @cInclude("Carbon/Carbon.h");
-    @cInclude("CoreServices/CoreServices.h");
     @cInclude("objc/objc.h");
     @cInclude("objc/runtime.h");
     @cInclude("unistd.h");
