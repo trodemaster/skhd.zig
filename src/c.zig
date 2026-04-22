@@ -4,6 +4,8 @@ pub const c_impl = @cImport({
     @cDefine("__METADATA_METADATA__", "1");
     @cDefine("__ATS__", "1");
     @cDefine("__IMAGEIO__", "1");
+    @cDefine("__CORETEXT__", "1");
+    @cDefine("__DISKSPACERECOVERY__", "1");
     @cInclude("Carbon/Carbon.h");
     @cInclude("objc/objc.h");
     @cInclude("objc/runtime.h");
