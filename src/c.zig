@@ -6,7 +6,7 @@ pub const c_impl = @cImport({
     @cInclude("carbon_shim.h");
 
     // CoreText: multiple headers have _Nonnull on array params, and
-    // SFNTLayoutTypes.h (1833 lines) may crash translate-c.
+    // SFNTLayoutTypes.h may crash translate-c.
     // Shim above provides CTFontRef / CTFontDescriptorRef used by HIToolbox.
     @cDefine("__CORETEXT__", "1");
 
@@ -31,7 +31,28 @@ pub const c_impl = @cImport({
     // XPC: nullability on uuid_t array params
     @cDefine("__XPC_H__", "1");
 
+    // HIToolbox umbrella includes CarbonEvents.h (635 KB), Appearance.h (182 KB),
+    // Controls.h (169 KB), HIDataBrowser.h (164 KB), etc. — together they exceed
+    // translate-c's stack budget and cause a SIGBUS crash.  Skip the umbrella and
+    // pull in only the three sub-headers skhd.zig actually needs.
+    @cDefine("__HITOOLBOX__", "1");
+
+    // HIServices umbrella pulls in extra headers we don't need; skip it and
+    // include AXUIElement.h and Processes.h directly below.
+    @cDefine("__HISERVICES__", "1");
+
     @cInclude("Carbon/Carbon.h");
+
+    // HIToolbox sub-headers (included after Carbon.h so ApplicationServices
+    // and CarbonCore guards are already set, preventing re-inclusion).
+    @cInclude("HIToolbox/CarbonEventsCore.h"); // EventTypeSpec, EventHandlerRef, Install*
+    @cInclude("HIToolbox/Events.h");           // kVK_*, UCKeyTranslate, LMGetKbdType
+    @cInclude("HIToolbox/TextInputSources.h"); // TISCopy*, TISGetInputSourceProperty
+
+    // HIServices sub-headers
+    @cInclude("HIServices/AXUIElement.h"); // AXIsProcessTrusted
+    @cInclude("HIServices/Processes.h");   // GetFrontProcess, ProcessSerialNumber
+
     @cInclude("objc/objc.h");
     @cInclude("objc/runtime.h");
     @cInclude("unistd.h");
