@@ -3,6 +3,7 @@ pub const c_impl = @cImport({
     // Metadata/MDItem.h has Obj-C blocks syntax; ATS has ATS_UNAVAILABLE attribute issues.
     @cDefine("__METADATA_METADATA__", "1");
     @cDefine("__ATS__", "1");
+    @cDefine("__IMAGEIO__", "1");
     @cInclude("Carbon/Carbon.h");
     @cInclude("objc/objc.h");
     @cInclude("objc/runtime.h");
