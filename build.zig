@@ -65,6 +65,18 @@ pub fn build(b: *std.Build) void {
     const options = b.addOptions();
     options.addOption(bool, track_alloc_option, false);
 
+    // Zig 0.16 doesn't add umbrella framework sub-paths for @cImport.
+    // Carbon/Carbon.h pulls in CoreServices, ApplicationServices, and Carbon
+    // sub-frameworks whose headers use <SubFW/Header.h> style includes.
+    const sysroot = b.sysroot orelse
+        if (std.c.getenv("SDKROOT")) |s| std.mem.span(s) else null;
+    if (sysroot) |sr| {
+        const fwbase = "{s}/System/Library/Frameworks/{s}.framework/Frameworks";
+        for ([_][]const u8{ "Carbon", "CoreServices", "ApplicationServices" }) |fw| {
+            exe.root_module.addFrameworkPath(.{ .cwd_relative = b.fmt(fwbase, .{ sr, fw }) });
+        }
+    }
+
     linkFrameworks(exe);
     addVersionImport(b, exe);
     exe.root_module.addOptions("build_options", options);
