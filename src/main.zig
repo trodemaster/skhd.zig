@@ -12,7 +12,7 @@ const log = std.log.scoped(.main);
 
 var debug_allocator: std.heap.DebugAllocator(.{}) = .init;
 
-pub fn main() !void {
+pub fn main(init: std.process.Init.Minimal) !void {
     // Get base allocator
     const base_gpa, const is_debug = switch (builtin.mode) {
         .Debug, .ReleaseSafe => .{ debug_allocator.allocator(), true },
@@ -42,9 +42,12 @@ pub fn main() !void {
         tracker.deinit();
     };
 
-    // Parse command line arguments
-    const args = try std.process.argsAlloc(gpa);
-    defer std.process.argsFree(gpa, args);
+    // Parse command line arguments (std.process.argsAlloc removed in Zig 0.16)
+    const argv = init.args.vector;
+    var args_list = try std.ArrayList([]const u8).initCapacity(gpa, argv.len);
+    defer args_list.deinit(gpa);
+    for (argv) |arg| args_list.appendAssumeCapacity(std.mem.span(arg));
+    const args = args_list.items;
 
     var config_file: ?[]const u8 = null;
     var verbose = false;
