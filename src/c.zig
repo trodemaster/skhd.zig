@@ -5,12 +5,10 @@ pub const c_impl = @cImport({
     // types that needed frameworks require (e.g. CTFontRef used by HIToolbox).
     @cInclude("carbon_shim.h");
 
-    // CoreText specific headers: _Nonnull on array params breaks translate-c.
-    // Shim provides CTFontRef / CTFontDescriptorRef used by HIToolbox headers.
-    @cDefine("__CTFONT__", "1");
-    @cDefine("__CTFRAME__", "1");
-    @cDefine("__CTRUN__", "1");
-    @cDefine("__CTRUBYANNOTATION__", "1");
+    // CoreText: multiple headers have _Nonnull on array params, and
+    // SFNTLayoutTypes.h (1833 lines) may crash translate-c.
+    // Shim above provides CTFontRef / CTFontDescriptorRef used by HIToolbox.
+    @cDefine("__CORETEXT__", "1");
 
     // ApplicationServices sub-frameworks — unused, skip to avoid translate-c issues
     @cDefine("__ATS__", "1");               // deprecated font API
