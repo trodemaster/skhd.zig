@@ -7,7 +7,7 @@ const Skhd = @import("skhd.zig");
 const synthesize = @import("synthesize.zig");
 const TrackingAllocator = @import("TrackingAllocator.zig");
 
-const version = std.mem.trimRight(u8, @embedFile("VERSION"), "\n\r\t ");
+const version = std.mem.trimEnd(u8, @embedFile("VERSION"), "\n\r\t ");
 const log = std.log.scoped(.main);
 
 var debug_allocator: std.heap.DebugAllocator(.{}) = .init;

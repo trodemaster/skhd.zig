@@ -261,7 +261,7 @@ fn acceptCommand(self: *Tokenizer) []const u8 {
             break;
         }
     }
-    return std.mem.trimRight(u8, self.buffer[start..self.pos], "\n");
+    return std.mem.trimEnd(u8, self.buffer[start..self.pos], "\n");
 }
 
 fn acceptString(self: *Tokenizer) []const u8 {
