@@ -28,19 +28,14 @@
 
     // Tracks the earliest Zig version that the package considers to be a
     // supported use case.
-    .minimum_zig_version = "0.15.0",
+    .minimum_zig_version = "0.16.0",
 
     // This field is optional.
     // Each dependency must either provide a `url` and `hash`, or a `path`.
     // `zig build --fetch` can be used to fetch all dependencies of a package, recursively.
     // Once all dependencies are fetched, `zig build` no longer requires
     // internet connectivity.
-    .dependencies = .{
-        .zbench = .{
-            .url = "https://github.com/hendriknielaender/zbench/archive/ad7ccbdb06476affc512c12574b54f7d4386622c.tar.gz",
-            .hash = "zbench-0.10.0-YTdc7-cmAQCnYOFNUAy3wZ-Sx9-_r8lW4uwpn87wydTn",
-        },
-    },
+    .dependencies = .{},
     .paths = .{
         "build.zig",
         "build.zig.zon",
